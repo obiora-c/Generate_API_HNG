@@ -32,6 +32,7 @@ def classify_name(request):
             params={"name": name},
             timeout=10
         )
+        response.raise_for_status()
 
         if response.status_code != 200:
             return Response(
