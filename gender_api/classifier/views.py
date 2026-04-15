@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 #-----Validation for name -------
 
 def classify_name (requests): 
-    name = requests.get('name')
+    name = requests.GET.get('name')
     
     if name is None or name.strip() == '' :
         return Response(
