@@ -47,7 +47,7 @@ def classify_name (requests):
                 {"status" : "error", "message" : "Gender missing or count disabled"}, 
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY
                 ) 
-# -----  data to be processed ----      
+# -----  data to be processed -----      
         sample_size = count
         is_confident = probability >= 0.7 and sample_size >= 100
         
