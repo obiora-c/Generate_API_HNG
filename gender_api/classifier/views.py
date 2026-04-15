@@ -30,7 +30,7 @@ def classify_name(request):
         response = requests.get(
             "https://api.genderize.io",
             params={"name": name},
-            timeout=3
+            timeout=10
         )
 
         if response.status_code != 200:
