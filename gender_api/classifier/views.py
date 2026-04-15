@@ -28,9 +28,11 @@ def classify_name (requests):
         
 # ----- Calling an EExternal API ---------     
     try:
-        response = requests.get("https://api.genderize.io", params={"name": name},
-                                timeout = 5
-                                )
+        response = requests.get(
+            "https://api.genderize.io", 
+            params={"name": name},
+            timeout = 3
+            )
         if response.status_code  != 200:
             return Response(
                 {"status": "error", "message": "Upstream API error"},
@@ -47,9 +49,17 @@ def classify_name (requests):
                 {"status" : "error", "message" : "Gender missing or count disabled"}, 
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY
                 ) 
+            
+        if probability is None or count is None:
+            return Response(
+               {"status": "error", "message": "No prediction available for the provided name"},
+               status=422
+               )
+            
 # -----  data to be processed -----      
         sample_size = count
         is_confident = probability >= 0.7 and sample_size >= 100
+        
         
         processed_at = datetime.now(timezone).isoformat
         
