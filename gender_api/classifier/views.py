@@ -1,97 +1,86 @@
 from django.shortcuts import render
 
 
-# Create your views here.
-from rest_framework.request import Request
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime, timezone
+import requests
 
 
-#-----Validation for name -------
+@api_view(['GET'])
+def classify_name(request):
+    name = request.GET.get('name')
 
-def classify_name (requests): 
-    name = requests.GET.get('name')
-    
-    if name is None or name.strip() == '' :
+    # -------- VALIDATION --------
+    if name is None or name.strip() == '':
         return Response(
-            {"status": "error", "Message": "Missing Name or You didnt Enter a Name"},
+            {"status": "error", "message": "Missing or empty name parameter"},
             status=status.HTTP_400_BAD_REQUEST
-            
-            )
-        
-        
+        )
+
     if not isinstance(name, str):
         return Response(
-            {"status":status.HTTP_422_UNPROCESSABLE_ENTITY
-        })
-        
-# ----- Calling an EExternal API ---------     
+            {"status": "error", "message": "Name must be a string"},
+            status=status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+
     try:
+        # -------- CALL EXTERNAL API --------
         response = requests.get(
-            "https://api.genderize.io", 
+            "https://api.genderize.io",
             params={"name": name},
-            timeout = 3
-            )
-        if response.status_code  != 200:
+            timeout=3
+        )
+
+        if response.status_code != 200:
             return Response(
                 {"status": "error", "message": "Upstream API error"},
-                status=status.HTTP_502_BAD_GATEWAY)
-            
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+
         data = response.json()
-        
+
         gender = data.get("gender")
         probability = data.get("probability")
         count = data.get("count")
-        
+
+        # -------- EDGE CASE --------
         if gender is None or count == 0:
             return Response(
-                {"status" : "error", "message" : "Gender missing or count disabled"}, 
+                {"status": "error", "message": "No prediction available for the provided name"},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY
-                ) 
-            
-        if probability is None or count is None:
-            return Response(
-               {"status": "error", "message": "No prediction available for the provided name"},
-               status=422
-               )
-            
-# -----  data to be processed -----      
+            )
+
+        # -------- PROCESS DATA --------
         sample_size = count
         is_confident = probability >= 0.7 and sample_size >= 100
-        
-        
-        processed_at = datetime.now(timezone).isoformat
-        
-        
+        processed_at = datetime.now(timezone.utc).isoformat()
+
+        # -------- SUCCESS --------
         return Response({
-            "status": "SUCCESS NIGGA",
+            "status": "success",
             "data": {
                 "name": name,
                 "gender": gender,
                 "probability": probability,
+                "sample_size": sample_size,
                 "is_confident": is_confident,
-                "processed_at": processed_at   
+                "processed_at": processed_at
             }
         }, status=status.HTTP_200_OK)
-        
+
     except requests.exceptions.RequestException:
         return Response(
-            {"status": "error", "Message" : "API error (API not found)"},
+            {"status": "error", "message": "Upstream API error"},
             status=status.HTTP_502_BAD_GATEWAY
-            )
-        
+        )
+
     except Exception:
         return Response(
-            {"status" : "error", "Message" : "Internal Server Error"},
+            {"status": "error", "message": "Internal server error"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-        
-        
-        
-        
-        
-
+        )
             
             
     
