@@ -2,5 +2,4 @@ Django
 djangorestframework
 requests
 django-cors-headers
-mangum
 gunicorn
