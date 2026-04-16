@@ -19,7 +19,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('classifier.urls'))
+    path('', include('gender_api.classifier.urls'))
 ]
 
 
