@@ -30,18 +30,11 @@ def classify_name(request):
         response = requests.get(
             "https://api.genderize.io",
             params={"name": name},
-            timeout=10
+            timeout=10,
+            headers={"User-Agent": "Mozilla/5.0"}   # ✅ FIXED
         )
-        
-        headers={"User-Agent": "Mozilla/5.0"}
-        
-        response.raise_for_status()
 
-        if response.status_code != 200:
-            return Response(
-                {"status": "error", "message": "Upstream API error"},
-                status=status.HTTP_502_BAD_GATEWAY
-            )
+        response.raise_for_status()
 
         data = response.json()
 
@@ -55,6 +48,9 @@ def classify_name(request):
                 {"status": "error", "message": "No prediction available for the provided name"},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY
             )
+
+        # -------- FIX: ensure correct type --------
+        probability = float(probability)
 
         # -------- PROCESS DATA --------
         sample_size = count
@@ -85,7 +81,3 @@ def classify_name(request):
             {"status": "error", "message": "Internal server error"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-            
-            
-    
-    
