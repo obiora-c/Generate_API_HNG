@@ -1,14 +1,17 @@
+
+
 {
+  "version": 2,
   "builds": [
     {
-      "src": "gender_api/wsgi.py",
+      "src": "api/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/(.*)",
-      "dest": "gender_api/wsgi.py"
+      "src": "/api/(.*)",
+      "dest": "api/index.py"
     }
   ]
 }
