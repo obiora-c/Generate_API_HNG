@@ -1,5 +1,0 @@
-Django
-djangorestframework
-requests
-django-cors-headers
-gunicorn
