@@ -33,8 +33,7 @@ def classify_name(request):
             timeout=10
         )
         
-        print("STATUS:", response.status_code)
-        print("BODY:", response.text)
+        headers={"User-Agent": "Mozilla/5.0"}
         
         response.raise_for_status()
 
