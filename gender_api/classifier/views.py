@@ -1,6 +1,3 @@
-from django.shortcuts import render
-
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -31,16 +28,26 @@ def classify_name(request):
             "https://api.genderize.io",
             params={"name": name},
             timeout=10,
-            headers={"User-Agent": "Mozilla/5.0"}   # ✅ FIXED
+            headers={"User-Agent": "Mozilla/5.0"}
         )
 
         response.raise_for_status()
-
         data = response.json()
 
         gender = data.get("gender")
         probability = data.get("probability")
         count = data.get("count")
+
+        # -------- NORMALIZE DATA TYPES --------
+        try:
+            probability = float(probability)
+        except (TypeError, ValueError):
+            probability = None
+
+        try:
+            count = int(count)
+        except (TypeError, ValueError):
+            count = 0
 
         # -------- EDGE CASE --------
         if gender is None or count == 0:
@@ -48,9 +55,6 @@ def classify_name(request):
                 {"status": "error", "message": "No prediction available for the provided name"},
                 status=status.HTTP_422_UNPROCESSABLE_ENTITY
             )
-
-        # -------- FIX: ensure correct type --------
-        probability = float(probability)
 
         # -------- PROCESS DATA --------
         sample_size = count
